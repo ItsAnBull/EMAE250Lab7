@@ -1,0 +1,112 @@
+function output = ZhouK_Prelab7()
+
+% ---------------- TASK 1 ----------------
+
+% initialize the first column of the table
+values(:,1) = [0 1 2];
+
+% initialize the second column of the table
+values(:,2) = [0 0.3 0.6];
+
+% fill in the given initial conditions for t=0, t=0.3 and t=0.6
+values(:,3) = [0.7 0.64670 0.58891];
+
+% intialize function handle for g
+g = @(y,t) 1.2*y*power(t,2) - 0.3*y;
+
+% initialize the fourth column of the table
+values(1,4) = g(values(1,3), values(1,2));
+values(2,4) = g(values(2,3), values(2,2));
+values(3,4) = g(values(3,3), values(3,2));
+
+% initialize variable for the step size
+h = 0.3;
+
+% initialize function handle for the predictor
+predictor = @(h,y,g2,g1,g0) y + (h*((23/12)*g2 - (4/3)*(g1) + (5/12)*g0));
+
+% initialize function handle for the corrector
+corrector = @(h,y,g3,g2,g1) y + (h*((5/12)*g3 + (2/3)*g2 - (1/12)*g1));
+
+% intialize function handle for the corrector modifier
+corrector_modifier = @(h,c,old) c - (h*(c - old));
+
+% initialize function handle for the convergence
+convergence = @(new, old) (new - old)/ new;
+
+% apply the predictor formula to indices 2, 1, 0
+% consider p to be our new best estimate
+% p = 0.6181
+p = predictor(h,values(3,3),values(3,4),values(2,4),values(1,4));
+old = p;
+
+% enter in the fourth row to the table
+values(4,:) = [3 0.9 p g(p,0.9)];
+
+% apply the corrector formula to indices 3, 2, 1
+% c = 0.6328
+c = corrector(h,values(3,3),values(4,4),values(3,4),values(2,4));
+
+% apply the corrector modifier formula and store it in the table
+% c_m = 0.6284
+c_m = corrector_modifier(h,c,old);
+values(4,4) = c_m;
+values(4,3) = g(c_m,values(4,2));
+
+% check for convergence
+% eps = 0.0165
+eps = convergence(c_m, old);
+old = c_m;
+
+% apply the corrector formula to indices 3, 2, 1
+% c = 0.6670
+c = corrector(h,values(3,3),values(4,4),values(3,4),values(2,4));
+
+% apply the corrector modifier formula and store it in the table
+% c_m = 0.6523
+c_m = corrector_modifier(h,c,old);
+values(4,4) = c_m;
+values(4,3) = g(c_m,values(4,2));
+
+% check for convergence
+% eps = 0.0366
+eps = convergence(c_m, old);
+old = c_m;
+
+% apply the corrector formula to indices 3, 2, 1
+% c = 0.67
+c = corrector(h,values(3,3),values(4,4),values(3,4),values(2,4));
+
+% apply the corrector modifier formula and store it in the table
+% c_m = 0.6544
+c_m = corrector_modifier(h,c,old);
+values(4,4) = c_m;
+values(4,3) = g(c_m,values(4,2));
+
+% check for convergence
+% eps = 0.0032
+eps = convergence(c_m, old);
+old = c_m;
+
+% apply the corrector formula to indices 3, 2, 1
+% c = 0.6702
+c = corrector(h,values(3,3),values(4,4),values(3,4),values(2,4))
+
+% apply the corrector modifier formula and store it in the table
+% c_m = 0.6546
+c_m = corrector_modifier(h,c,old)
+values(4,4) = c_m;
+values(4,3) = g(c_m,values(4,2));
+
+% check for convergence
+% eps = 2.7954e-04
+eps = convergence(c_m, old)
+old = c_m;
+
+
+
+
+
+
+
+% ---------------- TASK 2 ----------------
