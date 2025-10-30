@@ -2,7 +2,11 @@ function output = ZhouK_Prelab7()
 
 format shortG
 
-% ---------------- TASK 1 ----------------
+
+
+% ----------------------- TASK 1 -----------------------
+
+
 
 % initialize variable for the step size
 h = 0.3;
@@ -152,5 +156,31 @@ values
 %             3          0.9      0.66257      0.44525
 %             4          1.2      0.90761       1.2961
 
-% ---------------- TASK 2 ----------------
 
+
+% ----------------------- TASK 2 -----------------------
+
+
+
+% 1) the predicted value
+% ANSWER: 2
+% You would need both the n_y and the n+1_y of the predicted
+% value, since you need first calculate and store the n+1_y value as the
+% new predicted value before calculating the n+1_y modified predicted value
+% using n_y.
+
+% 2) the modified predicted value
+% ANSWER: 1
+% This value can be rewritten after each iteration, as you never need to
+% retrieve two consecutive instances of it.
+
+% 3) the corrected value (multiple times)
+% ANSWER: 1
+% This value can be rewritten after each iteration, as you never need to
+% retrieve two consecutive instances of it.
+
+% 4) the modified corrected value (once for each corrected value)
+% ANSWER: 2
+% You would only need both the n_y and n+1_y of the modified corrected
+% value, since in order to calculate the error you need both the current
+% and previous approximations.
