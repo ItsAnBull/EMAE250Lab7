@@ -1,0 +1,11 @@
+clc; clear all;
+
+y = @(t,y,v) v
+
+v = @(t,y,v) -3*v - 2.5*y
+
+funcs = [y v]
+
+init = [0 1 -0.25]
+
+ZhouK_Lab7();
