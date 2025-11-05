@@ -1,6 +1,6 @@
 function ZhouK_Lab7(funcs, hist, h, num_steps, eps)
 
-format shortG;
+format longG;
 
 % -------- STEP 1: Use RK4 to obtain the first three data points --------
 
@@ -40,22 +40,44 @@ end
 % When this chunk is done, we should have three rows in the augmented state
 % array, corresponding to our first three time points.
 
-% ------------------------ STEP 2: Perform ABM ------------------------
+% ------------- STEP 2: Evaluate function at RK4 points -------------
+
+% initialize the evaluated function vector
+eval = [];
+
+% populate the evaluated function vector
+for i=1:4
+
+    % calculate the values of the function and insert them into the vector
+    eval(i) = funcs{N}(hist(i,:));
+
+end
+
+% flip the vector to make it align with the historical augmented array
+eval = transpose(eval);
+
+disp(horzcat(hist,eval));
+
+% ------------------------ STEP 3: Perform ABM ------------------------
 
 % initialize function handle for the predictor
-predictor = @(y,g2,g1,g0) y + (h*((23/12)*g2 - (4/3)*g1 + (5/12)*g0));
+predictor = @(y,g3,g2,g1,g0) y + (h*((55/24)*g3 + (-59/24)*g2 + (37/24)*g1 + (-3/8)*g0));
 
 % initalize function handle for the predictor modifier
-predictor_modifier = @(p,cm,p_prev) p + (0.9*(cm - p_prev));
+predictor_modifier = @(p,cm,p_prev) p + ((251/270)*(cm - p_prev));
 
 % initialize function handle for the corrector
-corrector = @(y,g3,g2,g1) y + (h*((5/12)*g3 + (2/3)*g2 - (1/12)*g1));
+corrector = @(y,g4,g3,g2,g1) y + (h*((3/8)*g4 + (19/24)*g3 + (-5/24)*g2 + (1/24)*g1));
 
 % intialize function handle for the corrector modifier
 corrector_modifier = @(c,p) c - (0.1*(c - p));
 
-for i=1:3
+for i=4:4
+    
+    % evaluate the last equation in the array
+    eval = funcs{N}(hist(i,:));
 
-%    p = 
+    % use the predictor algorithm
+    %p = predictor()
     
 end
