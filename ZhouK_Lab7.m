@@ -56,28 +56,43 @@ end
 % flip the vector to make it align with the historical augmented array
 eval = transpose(eval);
 
-disp(horzcat(hist,eval));
-
 % ------------------------ STEP 3: Perform ABM ------------------------
 
 % initialize function handle for the predictor
-predictor = @(y,g3,g2,g1,g0) y + (h*((55/24)*g3 + (-59/24)*g2 + (37/24)*g1 + (-3/8)*g0));
+predictor = @(y,g) y + (h*((55/24)*g(4) + (-59/24)*g(3) + (37/24)*g(2) + (-3/8)*g(1)));
 
 % initalize function handle for the predictor modifier
 predictor_modifier = @(p,cm,p_prev) p + ((251/270)*(cm - p_prev));
 
 % initialize function handle for the corrector
-corrector = @(y,g4,g3,g2,g1) y + (h*((3/8)*g4 + (19/24)*g3 + (-5/24)*g2 + (1/24)*g1));
+corrector = @(y,g) y + (h*((3/8)*g(4) + (19/24)*g(3) + (-5/24)*g(2) + (1/24)*g(1)));
 
 % intialize function handle for the corrector modifier
 corrector_modifier = @(c,p) c - (0.1*(c - p));
 
-for i=4:4
-    
-    % evaluate the last equation in the array
-    eval = funcs{N}(hist(i,:));
+for i=4:4+num_steps
 
     % use the predictor algorithm
-    %p = predictor()
+
+    p = predictor(hist(i,N+1),eval)
+    
+
+    % use the predictor modifier algorithm
+    if i ~=4
+
+    end
+
+    % update the eval vector to include the new value calculated using p
+    eval(1) = [];
+    temp = hist(i,:);
+    temp(3) = p;
+    eval(4) = funcs{N}(temp);
+
+    % use the corrector algorithm
+    c = corrector(hist(i,N+1),eval);
+
+
+    disp(horzcat(hist,eval));
+
     
 end
