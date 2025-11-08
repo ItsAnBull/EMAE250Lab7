@@ -42,7 +42,8 @@ end
 
 % ------------- STEP 2: Evaluate function at RK4 points -------------
 
-% populate the evaluated function vector
+% populate the evaluated function column of the historical augmented state
+% array
 for i=1:4
 
     % calculate the values of the function and insert them into the vector
@@ -73,6 +74,17 @@ aug = zeros(6,3);
 % initialize the firstPredictor flag variable
 firstPredictor = true;
 
+% NOTES:
+% Structure of the augmented state array/ASA (aug):
+% column 1: time step
+% column 2-N+1: state variables
+% row 1: old predictor value
+% row 2: new predictor value
+% row 3: predictor modifier value
+% row 4: corrector value
+% row 5: old corrector modifier value
+% row 6: new corrector modifier
+
 % perform the for loop based on the number of steps
 for i=4:num_steps-1
 
@@ -85,23 +97,37 @@ for i=4:num_steps-1
     % initialize the new step size
     aug(1:6,1) = hist(i,1) + h;
 
-    % use the predictor algorithm and add it into the ASV
+    % use the predictor algorithm and add it into the ASA
     for j = 2:N+1
 
+        % use the predictor formula
         p = predictor(hist(i,j),hist(i-3:i,j+1));
 
+        % use different values depending on if it is the first time the
+        % predictor formula is being used
         if firstPredictor
+
+            % assign the previous predictor, newest predictor, and
+            % predictor modifier rows to the calculated predictor in the
+            % augmented state array
             aug(1:3,j) = p;
             flipFirstPredictor = true;
+
         else
+
+            % assign the newest predictor to the calculated predictor row
+            % in the augmented state array
             aug(2,j) = p;
+
         end
 
     end
 
-    % use the predictor modifier algorithm and add it into the ASV
+    % only perform the predictor modifier if there is a previous predictor
+    % value
     if ~firstPredictor
 
+        % use the predictor modifier algorithm and add it into the ASA
         for j = 2:N+1
 
             pm = predictor_modifier(aug(2,j),aug(4,j),aug(1,j));
@@ -111,71 +137,95 @@ for i=4:num_steps-1
 
     end
 
+    % if the trigger variable to flip the flag has been triggered, then
+    % flip the flag variable
     if flipFirstPredictor
         firstPredictor = false;
     end
 
+    % repeat this loop untill all state variables have converged
     %while firstCorrector || all(error > eps)
     for z=1:3
 
-        % use the corrector algorithm and add it into the ASV
+        % use the corrector algorithm and add it into the ASA
         for j = 2:N+1
 
             % create the g vector to pass into the corrector algorithm
             g = hist(i-2:i,j+1);
 
+            % use a different evaluated value for the g vector depending on
+            % if it is the first corrector value:
             if firstCorrector
-        
+
+                % use the predictor modifier value
                 g(4) = funcs{j-1}(aug(3,:));
                 flipFirstCorrector = true;
 
             else
 
+                % use the corrector modifier value
                 g(4) = funcs{j-1}(aug(6,:));
 
             end
 
+            % add the corrector into the ASA
             c = corrector(hist(i,j),g);
             aug(4,j) = c;
 
         end
 
-        % use the corrector modifier algorithm and add it into the ASV
+        % use the corrector modifier algorithm and add it into the ASA
         for j = 2:N+1
 
+            % compute the corrector modifier value
             cm = corrector_modifier(aug(4,j),aug(2,j));
 
+            % update different rows in the ASA depending on if it is the
+            % first calculated corrector modifier value
             if firstCorrector
 
+                % assign both the oldest and newest corrector modifier
+                % values to the calculated one
                 aug(5:6,j) = cm;
 
             else
 
-                aug(6,j) = cm;                
+                % assign only the newest corrector modifier value to the
+                % calculated one
+                aug(6,j) = cm;
 
             end
-            
+
         end
 
         % check for convergence
         for j = 2:N+1
 
+            % calculate convergence differently depending on if it is the
+            % first corrector value
             if firstCorrector
 
+                % take the error between the newest corrector modifier and
+                % the newest predicted value
                 error(j-1) = convergence(aug(6,j),aug(2,j));
 
 
             else
 
+                % take the erorr between the newest corrector modifier and
+                % the oldest corrector modifier
                 error(j-1) = convergence(aug(6,j),aug(5,j));
 
             end
 
         end
 
-        % assign the new cm as the old cm
+        % assign the new corrector modifier value as the new corrector
+        % modifier
         aug(5,:) = aug(6,:);
 
+        % if the trigger variable to flip the flag has been triggered, then
+        % flip the flag variable
         if flipFirstCorrector
             firstCorrector = false;
         end
@@ -184,13 +234,16 @@ for i=4:num_steps-1
 
     % add in the modified corrector as the next timestep
     lasteq = funcs{N}(aug(6,:));
+
+    % update the HASA
     hist(i+1,:) = horzcat(aug(6,:),lasteq);
 
-    aug
-    
-    % assign the new p as the old p
+    % assign the new predicted value as the old one
     aug(1,:) = aug(2,:);
 
 end
 
-hist
+% truncate the extraneous column of the HASA
+hist = hist(:,1:N+1);
+
+
