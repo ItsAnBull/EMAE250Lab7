@@ -10,7 +10,7 @@ init = [0 1 -0.25];
 
 h = 0.2;
 
-num_steps = 4;
+num_steps = 21;
 
 eps = 1;
 

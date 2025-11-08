@@ -74,7 +74,7 @@ aug = zeros(6,3);
 firstPredictor = true;
 
 % perform the for loop based on the number of steps
-for i=4:num_steps
+for i=4:num_steps-1
 
     % intialize the firstCorrector flag variable
     firstCorrector = true;
@@ -126,7 +126,7 @@ for i=4:num_steps
 
             if firstCorrector
         
-                g(4) = funcs{j-1}(aug(2,:));
+                g(4) = funcs{j-1}(aug(3,:));
                 flipFirstCorrector = true;
 
             else
