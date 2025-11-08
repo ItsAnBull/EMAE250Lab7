@@ -10,8 +10,8 @@ init = [0 1 -0.25];
 
 h = 0.2;
 
-num_steps = 0;
+num_steps = 4;
 
-eps = 0;
+eps = 1;
 
 ZhouK_Lab7(funcs, init, h, num_steps, eps);

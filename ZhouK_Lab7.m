@@ -42,19 +42,13 @@ end
 
 % ------------- STEP 2: Evaluate function at RK4 points -------------
 
-% initialize the evaluated function vector
-eval = [];
-
 % populate the evaluated function vector
 for i=1:4
 
     % calculate the values of the function and insert them into the vector
-    eval(i) = funcs{N}(hist(i,:));
+    hist(i,4) = funcs{N}(hist(i,:));
 
 end
-
-% flip the vector to make it align with the historical augmented array
-eval = transpose(eval);
 
 % ------------------------ STEP 3: Perform ABM ------------------------
 
@@ -68,31 +62,135 @@ predictor_modifier = @(p,cm,p_prev) p + ((251/270)*(cm - p_prev));
 corrector = @(y,g) y + (h*((3/8)*g(4) + (19/24)*g(3) + (-5/24)*g(2) + (1/24)*g(1)));
 
 % intialize function handle for the corrector modifier
-corrector_modifier = @(c,p) c - (0.1*(c - p));
+corrector_modifier = @(c,p) c + ((-19/270)*(c - p));
 
-for i=4:4+num_steps
+% initialize function handle for convergence
+convergence = @(old,new) abs((new-old)/new);
 
-    % use the predictor algorithm
+% initialize the augmented state matrix
+aug = zeros(6,3);
 
-    p = predictor(hist(i,N+1),eval)
-    
+% initialize the firstPredictor flag variable
+firstPredictor = true;
 
-    % use the predictor modifier algorithm
-    if i ~=4
+% perform the for loop based on the number of steps
+for i=4:num_steps
+
+    % intialize the firstCorrector flag variable
+    firstCorrector = true;
+
+    % initialize the flipFirstCorrector flag variable
+    flipFirstCorrector = false;
+
+    % initialize the new step size
+    aug(1:6,1) = hist(i,1) + h;
+
+    % use the predictor algorithm and add it into the ASV
+    for j = 2:N+1
+
+        p = predictor(hist(i,j),hist(i-3:i,j+1));
+
+        if firstPredictor
+            aug(1:3,j) = p;
+            flipFirstPredictor = true;
+        else
+            aug(2,j) = p;
+        end
 
     end
 
-    % update the eval vector to include the new value calculated using p
-    eval(1) = [];
-    temp = hist(i,:);
-    temp(3) = p;
-    eval(4) = funcs{N}(temp);
+    % use the predictor modifier algorithm and add it into the ASV
+    if ~firstPredictor
 
-    % use the corrector algorithm
-    c = corrector(hist(i,N+1),eval);
+        for j = 2:N+1
+
+            pm = predictor_modifier(aug(2,j),aug(4,j),aug(1,j));
+            aug(3,j) = pm;
+
+        end
+
+    end
+
+    if flipFirstPredictor
+        firstPredictor = false;
+    end
+
+    %while firstCorrector || all(error > eps)
+    for z=1:3
+
+        % use the corrector algorithm and add it into the ASV
+        for j = 2:N+1
+
+            % create the g vector to pass into the corrector algorithm
+            g = hist(i-2:i,j+1);
+
+            if firstCorrector
+        
+                g(4) = funcs{j-1}(aug(2,:));
+                flipFirstCorrector = true;
+
+            else
+
+                g(4) = funcs{j-1}(aug(6,:));
+
+            end
+
+            c = corrector(hist(i,j),g);
+            aug(4,j) = c;
+
+        end
+
+        % use the corrector modifier algorithm and add it into the ASV
+        for j = 2:N+1
+
+            cm = corrector_modifier(aug(4,j),aug(2,j));
+
+            if firstCorrector
+
+                aug(5:6,j) = cm;
+
+            else
+
+                aug(6,j) = cm;                
+
+            end
+            
+        end
+
+        % check for convergence
+        for j = 2:N+1
+
+            if firstCorrector
+
+                error(j-1) = convergence(aug(6,j),aug(2,j));
 
 
-    disp(horzcat(hist,eval));
+            else
 
+                error(j-1) = convergence(aug(6,j),aug(5,j));
+
+            end
+
+        end
+
+        % assign the new cm as the old cm
+        aug(5,:) = aug(6,:);
+
+        if flipFirstCorrector
+            firstCorrector = false;
+        end
+
+    end
+
+    % add in the modified corrector as the next timestep
+    lasteq = funcs{N}(aug(6,:));
+    hist(i+1,:) = horzcat(aug(6,:),lasteq);
+
+    aug
     
+    % assign the new p as the old p
+    aug(1,:) = aug(2,:);
+
 end
+
+hist
