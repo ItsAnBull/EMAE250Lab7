@@ -246,4 +246,22 @@ end
 % truncate the extraneous column of the HASA
 hist = hist(:,1:N+1);
 
+writematrix(hist, 'ZhouK_timetrace.csv');
+
+figure; hold on;
+
+x = hist(:,1);
+
+for i=2:N+1
+    y = hist(:,i);
+    plot(x,y,'DisplayName',['Var' num2str(i-1)]);
+end
+
+xlabel('Indpendent variable');
+ylabel('State variables');
+title('State variables vs. Independent variable');
+legend('show');
+
+hold off;
+
 
