@@ -12,6 +12,6 @@ h = 0.2;
 
 num_steps = 21;
 
-eps = 1;
+eps = 0.0001;
 
 ZhouK_Lab7(funcs, init, h, num_steps, eps);

@@ -42,12 +42,16 @@ end
 
 % ------------- STEP 2: Evaluate function at RK4 points -------------
 
-% populate the evaluated function column of the historical augmented state
-% array
+% populate the calcs vector with calculated values of the function at the
+% first 4 time steps
 for i=1:4
 
-    % calculate the values of the function and insert them into the vector
-    hist(i,4) = funcs{N}(hist(i,:));
+    for j = 1:N
+
+        % calculate the values of the function and insert them into the vector
+        calcs(i,j) = funcs{j}(hist(i,:));
+
+    end  
 
 end
 
@@ -69,13 +73,13 @@ corrector_modifier = @(c,p) c + ((-19/270)*(c - p));
 convergence = @(old,new) abs((new-old)/new);
 
 % initialize the augmented state matrix
-aug = zeros(6,3);
+aug = zeros(6,N+1);
 
 % initialize the firstPredictor flag variable
 firstPredictor = true;
 
 % NOTES:
-% Structure of the augmented state array/ASA (aug):
+% Structure of the augmented state array/ASA (aug) (6 x N):
 % column 1: time step
 % column 2-N+1: state variables
 % row 1: old predictor value
@@ -84,6 +88,9 @@ firstPredictor = true;
 % row 4: corrector value
 % row 5: old corrector modifier value
 % row 6: new corrector modifier
+%
+% Structure of the calcs matrix (#timesteps x N):
+% column n: value of the rate of change of the corresponding state variable
 
 % perform the for loop based on the number of steps
 for i=4:num_steps-1
@@ -101,7 +108,7 @@ for i=4:num_steps-1
     for j = 2:N+1
 
         % use the predictor formula
-        p = predictor(hist(i,j),hist(i-3:i,j+1));
+        p = predictor(hist(i,j),calcs(i-3:i,j-1));
 
         % use different values depending on if it is the first time the
         % predictor formula is being used
@@ -144,14 +151,14 @@ for i=4:num_steps-1
     end
 
     % repeat this loop untill all state variables have converged
-    %while firstCorrector || all(error > eps)
-    for z=1:3
+    while firstCorrector || all(error > eps)
+    %for z=1:3
 
         % use the corrector algorithm and add it into the ASA
         for j = 2:N+1
 
             % create the g vector to pass into the corrector algorithm
-            g = hist(i-2:i,j+1);
+            g = calcs(i-2:i,j-1);
 
             % use a different evaluated value for the g vector depending on
             % if it is the first corrector value:
@@ -232,22 +239,25 @@ for i=4:num_steps-1
 
     end
 
-    % add in the modified corrector as the next timestep
-    lasteq = funcs{N}(aug(6,:));
-
     % update the HASA
-    hist(i+1,:) = horzcat(aug(6,:),lasteq);
+    hist(i+1,:) = aug(6,:);
+
+    % update the calcs matrix
+    for j = 1:N
+
+        calcs(i+1,j) = funcs{j}(hist(i+1,:));
+
+    end
 
     % assign the new predicted value as the old one
     aug(1,:) = aug(2,:);
 
 end
 
-% truncate the extraneous column of the HASA
-hist = hist(:,1:N+1);
-
+% write the matrix to a file
 writematrix(hist, 'ZhouK_timetrace.csv');
 
+% configure the plot
 figure; hold on;
 
 x = hist(:,1);
@@ -257,7 +267,7 @@ for i=2:N+1
     plot(x,y,'DisplayName',['Var' num2str(i-1)]);
 end
 
-xlabel('Indpendent variable');
+xlabel('Independent variable');
 ylabel('State variables');
 title('State variables vs. Independent variable');
 legend('show');
