@@ -89,7 +89,7 @@ firstPredictor = true;
 % row 5: old corrector modifier value
 % row 6: new corrector modifier
 %
-% Structure of the calcs matrix (#timesteps x N):
+% Structure of the calcs matrix (4 x N):
 % column n: value of the rate of change of the corresponding state variable
 
 % perform the for loop based on the number of steps
@@ -108,7 +108,7 @@ for i=4:num_steps-1
     for j = 2:N+1
 
         % use the predictor formula
-        p = predictor(hist(i,j),calcs(i-3:i,j-1));
+        p = predictor(hist(i,j),calcs(1:4,j-1));
 
         % use different values depending on if it is the first time the
         % predictor formula is being used
@@ -158,7 +158,7 @@ for i=4:num_steps-1
         for j = 2:N+1
 
             % create the g vector to pass into the corrector algorithm
-            g = calcs(i-2:i,j-1);
+            g = calcs(2:4,j-1);
 
             % use a different evaluated value for the g vector depending on
             % if it is the first corrector value:
@@ -245,9 +245,12 @@ for i=4:num_steps-1
     % update the calcs matrix
     for j = 1:N
 
-        calcs(i+1,j) = funcs{j}(hist(i+1,:));
+        calcs(5,j) = funcs{j}(hist(i+1,:));
 
     end
+    
+    % take the new calc vector as only the newest 4 entries
+    calcs = calcs(2:5,:);
 
     % assign the new predicted value as the old one
     aug(1,:) = aug(2,:);
