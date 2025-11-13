@@ -37,6 +37,7 @@ for iter = 1:3
     RK = (slopes(1,:) + 2*slopes(2,:) + 2*slopes(3,:) + slopes(4,:)) / 6;
     hist(iter+1,:) = hist(iter,:) + h*[1, RK];
 end
+
 % When this chunk is done, we should have three rows in the augmented state
 % array, corresponding to our first three time points.
 
@@ -93,7 +94,7 @@ firstPredictor = true;
 % column n: value of the rate of change of the corresponding state variable
 
 % perform the for loop based on the number of steps
-for i=4:num_steps-1
+for i=4:num_steps
 
     % intialize the firstCorrector flag variable
     firstCorrector = true;
