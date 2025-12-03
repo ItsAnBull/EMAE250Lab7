@@ -26,8 +26,8 @@ h = 0.1;
 eps = 0.0001;
 
 error = @(new,old) abs((new-old)/new);
-t = 10;
-num_steps = t/h;
+t = 9
+num_steps = 70;
 xvals = [];
 first = true;
 converged = false;
@@ -42,12 +42,12 @@ while first || ~converged
         converged = eps>error(xvals(l,1),xvals(l-1,1)) && eps>error(xvals(l,2),xvals(l-1,2));
     end
 
-    num_steps = num_steps + 100;
+    num_steps = num_steps + 500;
 
 end
 
 xvals
 num_steps
 
-% it can be determined that t=80s is roughly the number of steps
+% it can be determined that t=207s is roughly the number of steps
 

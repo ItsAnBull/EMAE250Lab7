@@ -275,14 +275,16 @@ if generate
     
     % initialize the driving force handle
     driving_force = @(t) 10*cos(0.7483*t);
-    for i=1:length(x)
-        force(i) = driving_force(x(i));  
+    for i=1:num_steps
+        force(i) = driving_force(x(i));
+        plot(x,force(i),'DisplayName','Driving Force');
     end
-    plot(x,force,'DisplayName','Driving Force');
 
-    plot(x,hist(:,2),'DisplayName','x1');
-    plot(x,hist(:,3),'DisplayName','x2');
-
+    for i=2:N+1
+        y = hist(:,i);
+        plot(x,y,'DisplayName',['Var' num2str(i-1)]);
+     
+    end
 
     xlabel('Independent variable');
     ylabel('State variables');
