@@ -1,0 +1,49 @@
+clc; clear all;
+
+XX = 68;
+YY = 84;
+
+w = 1;
+
+F = 10;
+m1 = 5;
+m2 = 9;
+k1 = 25;
+k2 = 20;
+c1 = (9-(XX/50));
+c2 = (11+(YY/50));
+
+f1 = @(vars) vars(4);
+f2 = @(vars) vars(5);
+f3 = @(vars) ((-1*(k1+k2)*vars(2))+(k2*vars(3))-((c1+c2)*vars(4))+(c2*vars(5)))/m1;
+f4 = @(vars) ((F*cos(w*vars(1)))-(k2*vars(3))+(k2*vars(2))-(c2*vars(5))+(c2*vars(4)))/m2;
+funcs = {f1 f2 f3 f4};
+init = [0 0 0 0 0];
+h = 0.1;
+eps = 0.0001;
+
+error = @(new,old) abs((new-old)/new);
+num_steps = 70;
+xvals = [];
+first = true;
+converged = false;
+while first || ~converged
+
+    xvals = vertcat(xvals,ZhouK_Lab7B(funcs, init, h, num_steps, eps, false));
+
+    if first
+        first = false;
+    else
+        l = length(xvals);
+        converged = eps>error(xvals(l,1),xvals(l-1,1)) && eps>error(xvals(l,2),xvals(l-1,2));
+    end
+
+    num_steps = num_steps + 60;
+
+end
+
+xvals
+num_steps
+
+% it can be determined that t=4.9s is roughly the number of steps
+

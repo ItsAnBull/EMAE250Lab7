@@ -1,4 +1,4 @@
-function ZhouK_Lab7(funcs, hist, h, num_steps, eps)
+function max_x = ZhouK_Lab7(funcs, hist, h, num_steps, eps, generate)
 
 format longG;
 
@@ -37,6 +37,7 @@ for iter = 1:3
     RK = (slopes(1,:) + 2*slopes(2,:) + 2*slopes(3,:) + slopes(4,:)) / 6;
     hist(iter+1,:) = hist(iter,:) + h*[1, RK];
 end
+
 % When this chunk is done, we should have three rows in the augmented state
 % array, corresponding to our first three time points.
 
@@ -51,7 +52,7 @@ for i=1:4
         % calculate the values of the function and insert them into the vector
         calcs(i,j) = funcs{j}(hist(i,:));
 
-    end  
+    end
 
 end
 
@@ -89,11 +90,11 @@ firstPredictor = true;
 % row 5: old corrector modifier value
 % row 6: new corrector modifier
 %
-% Structure of the calcs matrix (#timesteps x N):
+% Structure of the calcs matrix (4 x N):
 % column n: value of the rate of change of the corresponding state variable
 
 % perform the for loop based on the number of steps
-for i=4:num_steps-1
+for i=4:num_steps
 
     % intialize the firstCorrector flag variable
     firstCorrector = true;
@@ -152,7 +153,7 @@ for i=4:num_steps-1
 
     % repeat this loop untill all state variables have converged
     while firstCorrector || all(error > eps)
-    %for z=1:3
+        %for z=1:3
 
         % use the corrector algorithm and add it into the ASA
         for j = 2:N+1
@@ -245,33 +246,47 @@ for i=4:num_steps-1
     % update the calcs matrix
     for j = 1:N
 
-        calcs(i+1,j) = funcs{j}(hist(i+1,:));
+        calcs(5,j) = funcs{j}(hist(i+1,:));
 
     end
+
+    % take the new calc vector as only the newest 4 entries
+    calcs = calcs(2:5,:);
 
     % assign the new predicted value as the old one
     aug(1,:) = aug(2,:);
 
 end
 
-% write the matrix to a file
-writematrix(hist, 'ZhouK_timetrace.csv');
+% return the values of the max x1 and x2
+max_x = [max(hist(:,2)) max(hist(:,3))];
 
-% configure the plot
-figure; hold on;
+% format the data only if necessary
+if generate
 
-x = hist(:,1);
+    % write the matrix to a file
+    writematrix(hist, 'ZhouK_timetrace.csv');
 
-for i=2:N+1
-    y = hist(:,i);
-    plot(x,y,'DisplayName',['Var' num2str(i-1)]);
+    % configure the plot
+
+    figure; hold on;
+
+    x = hist(:,1);
+
+    for i=2:N+1
+        y = hist(:,i);
+        plot(x,y,'DisplayName',['Var' num2str(i-1)]);
+    end
+
+    xlabel('Independent variable');
+    ylabel('State variables');
+    title('State variables vs. Independent variable');
+    legend('show');
+
+    hold off;
+
 end
 
-xlabel('Independent variable');
-ylabel('State variables');
-title('State variables vs. Independent variable');
-legend('show');
 
-hold off;
 
 
