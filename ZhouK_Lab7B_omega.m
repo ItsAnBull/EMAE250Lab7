@@ -33,14 +33,14 @@ first = true;
 converged = false;
 
 % determine w_lower and w_upper
-w = 0.74832;
+w = 0.79990;
 f4 = @(vars) ((F*cos(w*vars(1)))-(k2*vars(3))+(k2*vars(2))-(c2*vars(5))+(c2*vars(4)))/m2;
 funcs = {f1 f2 f3 f4};
 xvals = vertcat(xvals,ZhouK_Lab7B(funcs, init, h, num_steps, eps, false));
 ratio = xvals(2)/xvals(1)
 
 % search for the optimal omega (lies between these bounds)
-% w_lower = 0.74832;
-% w_upper = 0.74833;
-% w_final = 0.7483;
+% w_lower = 0.79990;
+% w_upper = 0.79991;
+% w_final = 0.7999;
 

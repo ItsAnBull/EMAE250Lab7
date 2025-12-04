@@ -259,7 +259,8 @@ for i=4:num_steps
 end
 
 % return the values of the max x1 and x2
-max_x = [max(hist(:,2)) max(hist(:,3))];
+l = length(hist(:,1));
+max_x = [max(hist(l-500:l,2)) max(hist(l-500:l,3))];
 
 % format the data only if necessary
 if generate
@@ -274,7 +275,7 @@ if generate
     x = hist(:,1);
     
     % initialize the driving force handle
-    driving_force = @(t) 10*cos(0.7483*t);
+    driving_force = @(t) 10*cos(0.7999*t);
     for i=1:length(x)
         force(i) = driving_force(x(i));  
     end
